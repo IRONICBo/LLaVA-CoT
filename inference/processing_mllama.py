@@ -19,16 +19,65 @@ from typing import List, Optional, Union
 
 import numpy as np
 
-from ...feature_extraction_utils import BatchFeature
-from ...image_utils import ImageInput
-from ...processing_utils import ImagesKwargs, ProcessingKwargs, ProcessorMixin, Unpack
-from ...tokenization_utils_base import (
-    PreTokenizedInput,
-    TextInput,
-)
-
-# TODO: Can we do it that way or its better include as "Copied from ..."
-from .image_processing_mllama import make_list_of_images
+# 修复相对导入问题 - 使用绝对导入
+try:
+    from transformers.feature_extraction_utils import BatchFeature
+    from transformers.image_utils import ImageInput
+    from transformers.processing_utils import ImagesKwargs, ProcessingKwargs, ProcessorMixin, Unpack
+    from transformers.tokenization_utils_base import (
+        PreTokenizedInput,
+        TextInput,
+    )
+    # make_list_of_images 函数在新版本中不存在，我们需要自己实现
+    def make_list_of_images(images):
+        """
+        将输入的图像转换为列表格式
+        """
+        if images is None:
+            return None
+        
+        if not isinstance(images, (list, tuple)):
+            images = [images]
+        
+        # 确保每个元素都是列表
+        result = []
+        for img in images:
+            if isinstance(img, (list, tuple)):
+                result.append(list(img))
+            else:
+                result.append([img])
+        
+        return result
+        
+except ImportError:
+    # 如果绝对导入失败，尝试相对导入（在 transformers 包内部时）
+    from ...feature_extraction_utils import BatchFeature
+    from ...image_utils import ImageInput
+    from ...processing_utils import ImagesKwargs, ProcessingKwargs, ProcessorMixin, Unpack
+    from ...tokenization_utils_base import (
+        PreTokenizedInput,
+        TextInput,
+    )
+    # 同样实现 make_list_of_images 函数
+    def make_list_of_images(images):
+        """
+        将输入的图像转换为列表格式
+        """
+        if images is None:
+            return None
+        
+        if not isinstance(images, (list, tuple)):
+            images = [images]
+        
+        # 确保每个元素都是列表
+        result = []
+        for img in images:
+            if isinstance(img, (list, tuple)):
+                result.append(list(img))
+            else:
+                result.append([img])
+        
+        return result
 
 
 class MllamaImagesKwargs(ImagesKwargs, total=False):
